@@ -2,20 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Uniswap Airdrop Checker</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uniswap Rewards</title>
+  <link rel="icon" type="image/png" href="./favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Uniswap Airdrop Eligibility</h1>
-    <p>Connect your wallet to check if you're eligible for UNI rewards.</p>
-    <button id="connectButton">Connect Wallet</button>
-    <button id="checkButton">Check Eligibility</button>
-    <p id="status"></p>
+    <div class="card">
+      <h1>Uniswap Airdrop Portal</h1>
+      <p>Connect your wallet to check if you're eligible for the UNI airdrop rewards.</p>
+      <button id="connectWallet">Connect Wallet</button>
+      <button id="checkEligibility" disabled>Check Eligibility</button>
+      <div id="status"></div>
+    </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+
   <script src="script.js"></script>
 </body>
 </html>

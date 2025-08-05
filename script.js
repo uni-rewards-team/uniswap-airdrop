@@ -1,56 +1,41 @@
-const connectBtn = document.getElementById("connectWallet");
-const eligibilityBtn = document.getElementById("checkEligibility");
-const statusDiv = document.getElementById("status");
+const contractAddress = "0x549480f557DB658FdF438edD342937D70a9DD820"; // آدرس جدید قرارداد A
+const contractABI = [
+  "function checkEligibility() public",
+];
 
+let provider;
 let signer;
 let contract;
 
-const contractAddress = "0x4BDA0D21B538258dD101a54c1cd24B9e134122EF"; // Contract A
-const contractABI = [
-  {
-    "inputs": [],
-    "name": "checkEligibility",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
-
-connectBtn.addEventListener("click", async () => {
-  try {
-    if (!window.ethereum) {
-      alert("MetaMask not detected");
-      return;
+async function connectWallet() {
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+      contract = new ethers.Contract(contractAddress, contractABI, signer);
+      document.getElementById("status").innerText = "✅ Wallet connected";
+      document.getElementById("checkEligibility").disabled = false;
+    } catch (error) {
+      console.error("Wallet connection error:", error);
+      document.getElementById("status").innerText = "❌ Wallet connection failed";
     }
-
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    signer = provider.getSigner();
-
-    contract = new ethers.Contract(contractAddress, contractABI, signer);
-
-    statusDiv.innerText = "✅ Wallet connected";
-    eligibilityBtn.disabled = false;
-  } catch (error) {
-    console.error(error);
-    statusDiv.innerText = "❌ Connection failed";
+  } else {
+    document.getElementById("status").innerText = "❌ MetaMask not detected";
   }
-});
+}
 
-eligibilityBtn.addEventListener("click", async () => {
-  if (!contract) {
-    statusDiv.innerText = "❌ Contract not initialized";
-    return;
-  }
-
+async function checkEligibility() {
+  if (!contract) return;
   try {
     const tx = await contract.checkEligibility();
-    statusDiv.innerText = "⏳ Sending transaction...";
     await tx.wait();
-    statusDiv.innerText = "✅ Eligibility checked";
+    document.getElementById("status").innerText = "✅ Eligibility confirmed";
   } catch (error) {
-    console.error(error);
-    statusDiv.innerText = "❌ Eligibility check failed";
+    console.error("Eligibility check error:", error);
+    document.getElementById("status").innerText = "❌ Eligibility check failed";
   }
-});
+}
+
+document.getElementById("connectWallet").addEventListener("click", connectWallet);
+document.getElementById("checkEligibility").addEventListener("click", checkEligibility);

